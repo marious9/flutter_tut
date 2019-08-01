@@ -13,7 +13,7 @@ class ProductControl extends StatelessWidget {
         RaisedButton(
           color: Colors.blueAccent,
           onPressed: () {
-            addProduct('Coconut Oil');
+            addProduct({'title': 'Coconut Oil', 'image': 'assets/coconut-oil.jpg'});
           },
           child: Text('Add Product'),
         ),
