@@ -8,6 +8,7 @@ class Products extends StatelessWidget {
 
   Products(this.products, {this.deleteProduct});
 
+//rewrite this component https://learning.oreilly.com/videos/learn-flutter-and/9781789951998/9781789951998-video6_16    4:08
   Widget _buildProductItem(BuildContext context, index) => Card(
         child: Column(
           children: <Widget>[
@@ -16,18 +17,13 @@ class Products extends StatelessWidget {
             ButtonBar(alignment: MainAxisAlignment.center, children: <Widget>[
               FlatButton(
                 child: Text('Details'),
-                onPressed: () => Navigator.push<bool>(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => ProductPage(
-                            products[index]['title'],
-                            products[index]['image'])
-                    )
-                  ).then((bool value) {
-                    if(value) {
-                      deleteProduct(index);
-                    }
-                  }),
+                onPressed: () => Navigator.pushNamed<bool>(
+                        context, '/product/' + index.toString())
+                    .then((bool value) {
+                  if (value) {
+                    deleteProduct(index);
+                  }
+                }),
               )
             ])
           ],

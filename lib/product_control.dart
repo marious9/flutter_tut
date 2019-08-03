@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 class ProductControl extends StatelessWidget {
   final Function addProduct;
-  final Function deleteProducts;
 
-  ProductControl(this.addProduct, this.deleteProducts);
+  ProductControl(this.addProduct);
 
   @override
   Widget build(BuildContext context) {
@@ -16,13 +15,6 @@ class ProductControl extends StatelessWidget {
             addProduct({'title': 'Coconut Oil', 'image': 'assets/coconut-oil.jpg'});
           },
           child: Text('Add Product'),
-        ),
-        RaisedButton(
-          color: Colors.red,
-          onPressed: () {
-            deleteProducts();
-          },
-          child: Text('Delete Products'),
         ),
       ],
     );
