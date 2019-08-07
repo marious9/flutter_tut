@@ -5,16 +5,12 @@ import './product_list.dart';
 
 class ProductsAdminPage extends StatelessWidget {
   final Function addProduct;
-  final Function deleteProducts;
+  final Function deleteProduct;
 
-  ProductsAdminPage(this.addProduct, this.deleteProducts);
+  ProductsAdminPage(this.addProduct, this.deleteProduct);
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        drawer: Drawer(
+  Widget _buildSideDrawer(BuildContext context) {
+    return Drawer(
           child: Column(
             children: <Widget>[
               AppBar(
@@ -22,14 +18,23 @@ class ProductsAdminPage extends StatelessWidget {
                 title: Text('Choose'),
               ),
               ListTile(
-                title: Text('Manage Products'),
+                leading: Icon(Icons.shop),
+                title: Text('All Products'),
                 onTap: () {
-                  Navigator.pushReplacementNamed(context, '/');
+                  Navigator.pushReplacementNamed(context, '/products');
                 },
               )
             ],
           ),
-        ),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        drawer: _buildSideDrawer(context),
         appBar: AppBar(
           title: Text('Manage Products'),
           bottom: TabBar(
@@ -40,17 +45,14 @@ class ProductsAdminPage extends StatelessWidget {
               ),
               Tab(
                 icon: Icon(Icons.list),
-                text: 'My Products'
+                text: 'My Products',
               ),
             ],
           ),
         ),
         body: TabBarView(
-          children: <Widget>[
-            ProductCreatePage(addProduct),
-            ProductListPage(),
-          ],
-        )
+          children: <Widget>[ProductCreatePage(addProduct), ProductListPage()],
+        ),
       ),
     );
   }
