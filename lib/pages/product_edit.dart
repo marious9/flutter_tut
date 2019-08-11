@@ -1,82 +1,82 @@
 import 'package:flutter/material.dart';
 
-class ProductCreatePage extends StatefulWidget {
+class ProductEditPage extends StatefulWidget {
   final Function addProduct;
+  final Function updateProduct;
+  final Map<String, dynamic> product;
 
-  ProductCreatePage(this.addProduct);
+  ProductEditPage({this.addProduct, this.updateProduct, this.product});
 
   @override
   State<StatefulWidget> createState() {
-    return _ProductCreatePageState();
+    return _ProductEditPageState();
   }
 }
 
-class _ProductCreatePageState extends State<ProductCreatePage> {
-  String _titleValue;
-  String _descriptionValue;
-  double _priceValue;
+class _ProductEditPageState extends State<ProductEditPage> {
+  final Map<String, dynamic> _formData = {
+    'title': null,
+    'description': null,
+    'price': null
+  };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Widget _buildTitleTextField() {
     return TextFormField(
+      initialValue: widget.product != null ? widget.product['title'] : '',
       validator: (String value) {
-        if(value.isEmpty || value.length < 5) {
+        if (value.isEmpty || value.length < 5) {
           return 'Title is required and should be more than 5 characters';
         }
       },
       decoration: InputDecoration(labelText: 'Product Title'),
       onSaved: (String value) {
-        setState(() {
-          _titleValue = value;
-        });
+        _formData['title'] = value;
       },
     );
   }
 
   Widget _buildDescriptionTextField() {
     return TextFormField(
+      initialValue: widget.product != null ? widget.product['description'] : '',
       validator: (String value) {
-        if(value.isEmpty || value.length < 10) {
+        if (value.isEmpty || value.length < 10) {
           return 'Description is required and should be more than 10 characters';
         }
       },
       maxLines: 4,
       decoration: InputDecoration(labelText: 'Product Description'),
       onSaved: (String value) {
-        setState(() {
-          _descriptionValue = value;
-        });
+        _formData['description'] = value;
       },
     );
   }
 
   Widget _buildPriceTextField() {
     return TextFormField(
+      initialValue:
+          widget.product != null ? widget.product['price'].toString() : '',
       validator: (String value) {
-        double parsedValue = double.parse(value);
-        if(!value.isEmpty && !RegExp(r'^[+]?([.]\d+|\d+([.]\d+)?)$').hasMatch(value)) {
+        if (value.isEmpty &&
+            !RegExp(r'^[+]?([.]\d+|\d+([.]\d+)?)$').hasMatch(value)) {
           return 'Price has to be number and it is greater than 0';
         }
       },
       keyboardType: TextInputType.number,
       decoration: InputDecoration(labelText: 'Product Price'),
       onSaved: (String value) {
-        setState(() {
-          _priceValue = double.parse(value);
-        });
+        _formData['price'] = double.parse(value);
       },
     );
   }
 
   void _submitForm() {
-    if(!_formKey.currentState.validate()) {
-      return ;
+    if (!_formKey.currentState.validate()) {
+      return;
     }
     _formKey.currentState.save();
     final Map<String, dynamic> product = {
-      'title': _titleValue,
-      'description': _descriptionValue,
-      'price': _priceValue,
+      ..._formData,
       'image': 'assets/food.jpg'
     };
     widget.addProduct(product);
@@ -88,8 +88,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
-
-    return Container(
+    final Widget pageContent = Container(
       padding: EdgeInsets.symmetric(horizontal: targetPadding / 2),
       margin: EdgeInsets.all(10.0),
       child: Form(
@@ -111,5 +110,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
         ),
       ),
     );
+
+    return widget.product == null
+        ? pageContent
+        : Scaffold(
+            appBar: AppBar(
+              title: Text('Edit Product'),
+            ),
+            body: pageContent,
+          );
   }
 }
