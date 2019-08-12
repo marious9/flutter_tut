@@ -4,8 +4,9 @@ class ProductEditPage extends StatefulWidget {
   final Function addProduct;
   final Function updateProduct;
   final Map<String, dynamic> product;
+  final int productIndex;
 
-  ProductEditPage({this.addProduct, this.updateProduct, this.product});
+  ProductEditPage({this.addProduct, this.updateProduct, this.product, this.productIndex});
 
   @override
   State<StatefulWidget> createState() {
@@ -79,7 +80,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
       ..._formData,
       'image': 'assets/food.jpg'
     };
-    widget.addProduct(product);
+    if (widget.product == null) {
+      widget.addProduct(product);
+    } else {
+      widget.updateProduct(widget.productIndex, product);
+    }
     Navigator.pushReplacementNamed(context, '/products');
   }
 

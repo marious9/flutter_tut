@@ -57,7 +57,6 @@ class ProductCard extends StatelessWidget {
           _buildActionButtons(context)
         ],
       ),
-    );
-    ;
+    );    
   }
 }
