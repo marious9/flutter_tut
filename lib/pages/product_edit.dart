@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import '../models/product.dart';
 
 class ProductEditPage extends StatefulWidget {
   final Function addProduct;
   final Function updateProduct;
-  final Map<String, dynamic> product;
+  final Product product;
   final int productIndex;
 
-  ProductEditPage({this.addProduct, this.updateProduct, this.product, this.productIndex});
+  ProductEditPage(
+      {this.addProduct, this.updateProduct, this.product, this.productIndex});
 
   @override
   State<StatefulWidget> createState() {
@@ -18,13 +20,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final Map<String, dynamic> _formData = {
     'title': null,
     'description': null,
-    'price': null
+    'price': null,
+    'image': 'assets/food.jpg',
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Widget _buildTitleTextField() {
     return TextFormField(
-      initialValue: widget.product != null ? widget.product['title'] : '',
+      initialValue: widget.product != null ? widget.product.title : '',
       validator: (String value) {
         if (value.isEmpty || value.length < 5) {
           return 'Title is required and should be more than 5 characters';
@@ -39,7 +42,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   Widget _buildDescriptionTextField() {
     return TextFormField(
-      initialValue: widget.product != null ? widget.product['description'] : '',
+      initialValue: widget.product != null ? widget.product.description : '',
       validator: (String value) {
         if (value.isEmpty || value.length < 10) {
           return 'Description is required and should be more than 10 characters';
@@ -56,7 +59,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   Widget _buildPriceTextField() {
     return TextFormField(
       initialValue:
-          widget.product != null ? widget.product['price'].toString() : '',
+          widget.product != null ? widget.product.price.toString() : '',
       validator: (String value) {
         if (value.isEmpty &&
             !RegExp(r'^[+]?([.]\d+|\d+([.]\d+)?)$').hasMatch(value)) {
@@ -76,10 +79,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
       return;
     }
     _formKey.currentState.save();
-    final Map<String, dynamic> product = {
-      ..._formData,
-      'image': 'assets/food.jpg'
-    };
+    final Product product = Product(
+      description: _formData['description'],
+      image: _formData['image'],
+      price: _formData['price'],
+      title: _formData['title'],
+    );
     if (widget.product == null) {
       widget.addProduct(product);
     } else {
