@@ -1,16 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'package:scoped_model/scoped_model.dart';
-import 'package:tutorial_app/models/product.dart';
-import '../scope-models/product.dart';
 
 import '../widgets/ui_elements/title_default.dart';
+import '../models/product.dart';
+import '../scoped-models/main.dart';
 
 class ProductPage extends StatelessWidget {
-  final int index;
+  final int productIndex;
 
-  ProductPage(this.index);
+  ProductPage(this.productIndex);
 
   Widget _buildAddressPriceRow(double price) {
     return Row(
@@ -41,9 +42,9 @@ class ProductPage extends StatelessWidget {
       print('Back button pressed!');
       Navigator.pop(context, false);
       return Future.value(false);
-    }, child: ScopedModelDescendant<ProductsModel>(
-      builder: (BuildContext context, Widget child, ProductsModel model) {
-        final Product product = model.products[index];
+    }, child: ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        final Product product = model.allProducts[productIndex];
         return Scaffold(
           appBar: AppBar(
             title: Text(product.title),
