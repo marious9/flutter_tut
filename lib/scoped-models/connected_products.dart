@@ -1,24 +1,48 @@
+import 'dart:convert';
+
 import 'package:scoped_model/scoped_model.dart';
+import 'package:http/http.dart' as http;
 
 import '../models/product.dart';
 import '../models/user.dart';
+
+String firebaseUrl = 'https://flutter-tut-products-app.firebaseio.com';
 
 class ConnectedProductsModel extends Model {
   List<Product> _products = [];
   int _selProductIndex;
   User _authenticatedUser;
+  bool _isLoading = false;
 
   void addProduct(
       String title, String description, String image, double price) {
-    final Product newProduct = Product(
-        title: title,
-        description: description,
-        image: image,
-        price: price,
-        userEmail: _authenticatedUser.email,
-        userId: _authenticatedUser.id);
-    _products.add(newProduct);
-    notifyListeners();
+    _isLoading = true;
+    final Map<String, dynamic> productData = {
+      'title': title,
+      'description': description,
+      'image':
+          'https://cdn1.sph.harvard.edu/wp-content/uploads/sites/30/2017/02/DarkChocolate-Featured.jpg',
+      'price': price,
+      'userEmail': _authenticatedUser.email,
+      'userId': _authenticatedUser.id,
+      'isFavorite': false
+    };
+    http
+        .post(firebaseUrl + '/products.json', body: json.encode(productData))
+        .then((http.Response response) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      final Product newProduct = Product(
+          id: responseData['name'],
+          title: title,
+          description: description,
+          image: image,
+          price: price,
+          userEmail: _authenticatedUser.email,
+          userId: _authenticatedUser.id);
+      _products.add(newProduct);
+      _isLoading = false;
+      notifyListeners();
+    });
   }
 }
 
@@ -64,6 +88,35 @@ class ProductsModel extends ConnectedProductsModel {
     notifyListeners();
   }
 
+  void fetchProducts() {
+    _isLoading = true;
+    http.get(firebaseUrl + '/products.json').then((http.Response response) {
+      final List<Product> fetchedProductList = [];
+      final Map<String, dynamic> productListData = json.decode(response.body);
+
+      if (productListData == null) {
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+      productListData.forEach((String productId, dynamic productData) {
+        final Product product = Product(
+            id: productId,
+            description: productData['description'],
+            image: productData['image'],
+            price: productData['price'],
+            title: productData['title'],
+            userEmail: productData['userEmail'],
+            userId: productData['userId'],
+            isFavorite: productData['isFavorite']);
+        fetchedProductList.add(product);
+      });
+      _products = fetchedProductList;
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
+
   void deleteProduct() {
     _products.removeAt(selectedProductIndex);
     notifyListeners();
@@ -96,7 +149,12 @@ class ProductsModel extends ConnectedProductsModel {
 }
 
 class UserModel extends ConnectedProductsModel {
-    void login(String email, String password) {
-    _authenticatedUser = User(id: 'fdalsdfasf', email: email, password: password);
+  void login(String email, String password) {
+    _authenticatedUser =
+        User(id: 'fdalsdfasf', email: email, password: password);
   }
+}
+
+class UtilityModel extends ConnectedProductsModel {
+  bool get isLoading => _isLoading;
 }
