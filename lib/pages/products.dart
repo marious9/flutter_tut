@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
@@ -10,13 +9,14 @@ class ProductsPage extends StatefulWidget {
   final MainModel model;
 
   ProductsPage(this.model);
+
   @override
   State<StatefulWidget> createState() {
-    return _ProductPageState();
+    return _ProductsPageState();
   }
 }
 
-class _ProductPageState extends State<ProductsPage> {
+class _ProductsPageState extends State<ProductsPage> {
   @override
   initState() {
     widget.model.fetchProducts();
@@ -44,41 +44,41 @@ class _ProductPageState extends State<ProductsPage> {
   }
 
   Widget _buildProductsList() {
-    return ScopedModelDescendant<MainModel>(
-        builder: (BuildContext context, Widget child, MainModel model) {
-      Widget content = Center(child: Text('No products found'));
-
-      if (model.displayedProducts.length > 0 && !model.isLoading) {
-        content = Products();
-      } else if (model.isLoading) {
-        content = Center(child: CircularProgressIndicator());
-      }
-
-      return content;
-    });
+    return ScopedModelDescendant(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        Widget content = Center(child: Text('No Products Found!'));
+        if (model.displayedProducts.length > 0 && !model.isLoading) {
+          content = Products();
+        } else if (model.isLoading) {
+          content = Center(child: CircularProgressIndicator());
+        }
+        return RefreshIndicator(onRefresh: model.fetchProducts, child: content,) ;
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: _buildSideDrawer(context),
-        appBar: AppBar(
-          title: Text('EasyList'),
-          actions: <Widget>[
-            ScopedModelDescendant<MainModel>(
-              builder: (BuildContext context, Widget child, MainModel model) {
-                return IconButton(
-                  icon: Icon(model.displayFavoritesOnly
-                      ? Icons.favorite
-                      : Icons.favorite_border),
-                  onPressed: () {
-                    model.toggleDisplayMode();
-                  },
-                );
-              },
-            )
-          ],
-        ),
-        body: _buildProductsList());
+      drawer: _buildSideDrawer(context),
+      appBar: AppBar(
+        title: Text('EasyList'),
+        actions: <Widget>[
+          ScopedModelDescendant<MainModel>(
+            builder: (BuildContext context, Widget child, MainModel model) {
+              return IconButton(
+                icon: Icon(model.displayFavoritesOnly
+                    ? Icons.favorite
+                    : Icons.favorite_border),
+                onPressed: () {
+                  model.toggleDisplayMode();
+                },
+              );
+            },
+          )
+        ],
+      ),
+      body: _buildProductsList(),
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:scoped_model/scoped_model.dart';
 import 'package:http/http.dart' as http;
@@ -14,9 +15,10 @@ class ConnectedProductsModel extends Model {
   User _authenticatedUser;
   bool _isLoading = false;
 
-  void addProduct(
+  Future<Null> addProduct(
       String title, String description, String image, double price) {
     _isLoading = true;
+    notifyListeners();
     final Map<String, dynamic> productData = {
       'title': title,
       'description': description,
@@ -24,10 +26,9 @@ class ConnectedProductsModel extends Model {
           'https://cdn1.sph.harvard.edu/wp-content/uploads/sites/30/2017/02/DarkChocolate-Featured.jpg',
       'price': price,
       'userEmail': _authenticatedUser.email,
-      'userId': _authenticatedUser.id,
-      'isFavorite': false
+      'userId': _authenticatedUser.id
     };
-    http
+    return http
         .post(firebaseUrl + '/products.json', body: json.encode(productData))
         .then((http.Response response) {
       final Map<String, dynamic> responseData = json.decode(response.body);
@@ -75,25 +76,59 @@ class ProductsModel extends ConnectedProductsModel {
     return _showFavorites;
   }
 
-  void updateProduct(
+  Future<Null> updateProduct(
       String title, String description, String image, double price) {
-    final Product updatedProduct = Product(
-        title: title,
-        description: description,
-        image: image,
-        price: price,
-        userEmail: selectedProduct.userEmail,
-        userId: selectedProduct.userId);
-    _products[selectedProductIndex] = updatedProduct;
+    _isLoading = true;
     notifyListeners();
+    final Map<String, dynamic> updateData = {
+      'title': title,
+      'description': description,
+      'image':
+          'https://cdn1.sph.harvard.edu/wp-content/uploads/sites/30/2017/02/DarkChocolate-Featured.jpg',
+      'price': price,
+      'userEmail': selectedProduct.userEmail,
+      'userId': selectedProduct.userId
+    };
+    return http
+        .put(firebaseUrl + '/products/${selectedProduct.id}.json',
+            body: json.encode(updateData))
+        .then((http.Response reponse) {
+      _isLoading = false;
+      final Product updatedProduct = Product(
+          id: selectedProduct.id,
+          title: title,
+          description: description,
+          image: image,
+          price: price,
+          userEmail: selectedProduct.userEmail,
+          userId: selectedProduct.userId);
+      _products[selectedProductIndex] = updatedProduct;
+      notifyListeners();
+    });
   }
 
-  void fetchProducts() {
+  void deleteProduct() {
     _isLoading = true;
-    http.get(firebaseUrl + '/products.json').then((http.Response response) {
+    final deletedProductId = selectedProduct.id;
+    _products.removeAt(selectedProductIndex);
+    _selProductIndex = null;
+    notifyListeners();
+    http
+        .delete('${firebaseUrl}/products/${deletedProductId}.json')
+        .then((http.Response response) {
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
+
+  Future<Null> fetchProducts() {
+    _isLoading = true;
+    notifyListeners();
+    return http
+        .get(firebaseUrl + '/products.json')
+        .then((http.Response response) {
       final List<Product> fetchedProductList = [];
       final Map<String, dynamic> productListData = json.decode(response.body);
-
       if (productListData == null) {
         _isLoading = false;
         notifyListeners();
@@ -102,24 +137,18 @@ class ProductsModel extends ConnectedProductsModel {
       productListData.forEach((String productId, dynamic productData) {
         final Product product = Product(
             id: productId,
+            title: productData['title'],
             description: productData['description'],
             image: productData['image'],
             price: productData['price'],
-            title: productData['title'],
             userEmail: productData['userEmail'],
-            userId: productData['userId'],
-            isFavorite: productData['isFavorite']);
+            userId: productData['userId']);
         fetchedProductList.add(product);
       });
       _products = fetchedProductList;
       _isLoading = false;
       notifyListeners();
     });
-  }
-
-  void deleteProduct() {
-    _products.removeAt(selectedProductIndex);
-    notifyListeners();
   }
 
   void toggleProductFavoriteStatus() {
